@@ -370,15 +370,15 @@ class Helios:
 
                 tx_hash = await self.send_raw_transaction_with_retries(account, web3, approve_tx)
                 receipt = await self.wait_for_receipt_with_retries(web3, tx_hash)
-                block_number = receipt.blockNumber
+                # block_number = receipt.blockNumber # Removed this line
                 self.used_nonce[address] += 1
                 
                 explorer = f"https://explorer.helioschainlabs.org/tx/{tx_hash}"
                 
                 logger.success("Approve Success")
-                # logger.info(f"Block: {block_number}") # Removed
+                # logger.info(f"Block: {block_number}") # Removed this line
                 logger.action(f"Tx Hash: {tx_hash}")
-                logger.actionSuccess(f"Explorer: {explorer}") # Changed symbol
+                logger.actionSuccess(f"Explorer: {explorer}")
                 await asyncio.sleep(10)
             
             return True
@@ -775,8 +775,8 @@ class Helios:
             explorer = f"https://explorer.helioschainlabs.org/tx/{tx_hash}"
             logger.success("Bridge Success")
             # logger.info(f"Block: {block_number}") # Removed
-            logger.action(f"Tx Hash: {tx_hash}") # Changed symbol
-            logger.actionSuccess(f"Explorer: {explorer}") # Changed symbol
+            logger.action(f"Tx Hash: {tx_hash}")
+            logger.actionSuccess(f"Explorer: {explorer}")
         else:
             logger.error("Perform On-Chain Bridge Failed")
 
@@ -786,8 +786,8 @@ class Helios:
             explorer = f"https://explorer.helioschainlabs.org/tx/{tx_hash}"
             logger.success("Delegate Success")
             # logger.info(f"Block: {block_number}") # Removed
-            logger.action(f"Tx Hash: {tx_hash}") # Changed symbol
-            logger.actionSuccess(f"Explorer: {explorer}") # Changed symbol
+            logger.action(f"Tx Hash: {tx_hash}")
+            logger.actionSuccess(f"Explorer: {explorer}")
         else:
             logger.error("Perform On-Chain Delegate Failed")
 
@@ -915,8 +915,8 @@ class Helios:
             while True:
                 self.clear_terminal()
                 await display_welcome_screen()
-                logger.info(f"Account's Total: {len(accounts)}")
-
+                # Removed: logger.info(f"Account's Total: {len(accounts)}")
+                
                 if use_proxy:
                     await self.load_proxies(use_proxy_choice)
                 
@@ -925,7 +925,7 @@ class Helios:
                     if account:
                         address = self.generate_address(account)
 
-                        logger.info(f"{'=' * 10} {self.mask_account(address)} {'=' * 10}")
+                        # Removed: logger.info(f"{'=' * 10} {self.mask_account(address)} {'=' * 10}")
 
                         if not address:
                             logger.error("Invalid Private Key or Library Version Not Supported")
