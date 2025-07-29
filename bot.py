@@ -7,7 +7,7 @@ from aiohttp import ClientResponseError, ClientSession, ClientTimeout, BasicAuth
 from aiohttp_socks import ProxyConnector
 from fake_useragent import FakeUserAgent
 from datetime import datetime
-from colorama import init, Fore, Style # Updated import for colorama
+from colorama import init, Fore, Style
 import asyncio, random, json, re, os
 from dotenv import load_dotenv
 
@@ -29,7 +29,7 @@ class Colors:
     BRIGHT_MAGENTA = Fore.LIGHTMAGENTA_EX
     BRIGHT_WHITE = Fore.LIGHTWHITE_EX
     BRIGHT_BLACK = Fore.LIGHTBLACK_EX
-    BLUE = Fore.BLUE # Added BLUE attribute
+    BLUE = Fore.BLUE
 
 class Logger:
     @staticmethod
@@ -376,9 +376,9 @@ class Helios:
                 explorer = f"https://explorer.helioschainlabs.org/tx/{tx_hash}"
                 
                 logger.success("Approve Success")
-                logger.info(f"Block: {block_number}")
-                logger.info(f"Tx Hash: {tx_hash}")
-                logger.info(f"Explorer: {explorer}")
+                # logger.info(f"Block: {block_number}") # Removed
+                logger.action(f"Tx Hash: {tx_hash}")
+                logger.actionSuccess(f"Explorer: {explorer}") # Changed symbol
                 await asyncio.sleep(10)
             
             return True
@@ -528,7 +528,7 @@ class Helios:
     async def print_timer(self):
         for remaining in range(random.randint(self.min_delay, self.max_delay), 0, -1):
             print(
-                f"{Colors.CYAN}{Colors.BOLD}[ {datetime.now().strftime('%x %X')} ]{Colors.RESET}" # Using datetime.now() directly
+                f"{Colors.CYAN}{Colors.BOLD}[ {datetime.now().strftime('%x %X')} ]{Colors.RESET}"
                 f"{Colors.WHITE}{Colors.BOLD} | {Colors.RESET}"
                 f"{Colors.BLUE}{Colors.BOLD}Wait For{Colors.RESET}"
                 f"{Colors.WHITE}{Colors.BOLD} {remaining} {Colors.RESET}"
@@ -774,9 +774,9 @@ class Helios:
         if tx_hash and block_number:
             explorer = f"https://explorer.helioschainlabs.org/tx/{tx_hash}"
             logger.success("Bridge Success")
-            logger.info(f"Block: {block_number}")
-            logger.info(f"Tx Hash: {tx_hash}")
-            logger.info(f"Explorer: {explorer}")
+            # logger.info(f"Block: {block_number}") # Removed
+            logger.action(f"Tx Hash: {tx_hash}") # Changed symbol
+            logger.actionSuccess(f"Explorer: {explorer}") # Changed symbol
         else:
             logger.error("Perform On-Chain Bridge Failed")
 
@@ -785,9 +785,9 @@ class Helios:
         if tx_hash and block_number:
             explorer = f"https://explorer.helioschainlabs.org/tx/{tx_hash}"
             logger.success("Delegate Success")
-            logger.info(f"Block: {block_number}")
-            logger.info(f"Tx Hash: {tx_hash}")
-            logger.info(f"Explorer: {explorer}")
+            # logger.info(f"Block: {block_number}") # Removed
+            logger.action(f"Tx Hash: {tx_hash}") # Changed symbol
+            logger.actionSuccess(f"Explorer: {explorer}") # Changed symbol
         else:
             logger.error("Perform On-Chain Delegate Failed")
 
@@ -905,7 +905,7 @@ class Helios:
             if capctha_key:
                 self.CAPTCHA_KEY = capctha_key
 
-            await display_welcome_screen() # Call the new welcome screen
+            await display_welcome_screen()
             option, use_proxy_choice, rotate_proxy = self.print_question()
 
             use_proxy = False
@@ -914,13 +914,13 @@ class Helios:
 
             while True:
                 self.clear_terminal()
-                await display_welcome_screen() # Call the new welcome screen after clearing
+                await display_welcome_screen()
                 logger.info(f"Account's Total: {len(accounts)}")
 
                 if use_proxy:
                     await self.load_proxies(use_proxy_choice)
                 
-                logger.step(f"{'=' * 25}[ PROCESSING ACCOUNTS ]{'=' * 25}")
+                # Removed: logger.step(f"{'=' * 25}[ PROCESSING ACCOUNTS ]{'=' * 25}")
                 for account in accounts:
                     if account:
                         address = self.generate_address(account)
@@ -945,7 +945,7 @@ class Helios:
                         await self.process_accounts(account, address, option, use_proxy_choice, rotate_proxy)
                         await asyncio.sleep(3)
 
-                logger.step(f"{'=' * 72}")
+                # Removed: logger.step(f"{'=' * 72}")
                 seconds = 24 * 60 * 60
                 while seconds > 0:
                     formatted_time = self.format_seconds(seconds)
