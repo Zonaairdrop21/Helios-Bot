@@ -9,15 +9,9 @@ from fake_useragent import FakeUserAgent
 from datetime import datetime
 from colorama import init, Fore, Style
 import asyncio, random, json, re, os, time, pytz
-from dotenv import load_dotenv
 
-# Initialize colorama for auto-resetting styles
 init(autoreset=True)
-load_dotenv()
 
-wib = pytz.timezone('Asia/Jakarta')
-
-# === Terminal Color Setup ===
 class Colors:
     RESET = Style.RESET_ALL
     BOLD = Style.BRIGHT
@@ -36,7 +30,7 @@ class Colors:
 class Logger:
     @staticmethod
     def log(label, symbol, msg, color):
-        timestamp = datetime.now().astimezone(wib).strftime("%H:%M:%S")
+        timestamp = datetime.now().astimezone(pytz.timezone('Asia/Jakarta')).strftime("%H:%M:%S")
         print(f"{Colors.BRIGHT_BLACK}[{timestamp}]{Colors.RESET} {color}[{symbol}] {msg}{Colors.RESET}")
 
     @staticmethod
@@ -79,7 +73,6 @@ async def display_welcome_screen():
 
 class Helios:
     def __init__(self) -> None:
-        # Helios Configuration
         self.BASE_API = "https://testnet-api.helioschain.network/api"
         self.RPC_URL = "https://testnet1.helioschainlabs.org/"
         self.HELIOS_CONTRACT_ADDRESS = "0xD4949664cD82660AaE99bEdc034a0deA8A0bd517"
@@ -96,13 +89,11 @@ class Helios:
             {"Moniker": "Helios-Inter", "Contract Address": "0x882f8A95409C127f0dE7BA83b4Dfa0096C3D8D79"}
         ]
         
-        # SolariSwap Configuration
         self.SOLARI_BASE_API = "https://api.solariswap.finance/v1"
         self.WETH_CONTRACT_ADDRESS = "0x80b5a32E4F032B2a058b4F29EC95EEfEEB87aDcd"
         self.WBNB_CONTRACT_ADDRESS = "0xd567B3d7B8FE3C79a1AD8dA978812cfC4Fa05e75"
         self.SWAP_ROUTER_ADDRESS = "0xe80Ee0F963E9F636035B36bb1a40d0609f437C45"
         
-        # Common ABIs
         self.ERC20_CONTRACT_ABI = json.loads('''[
             {"type":"function","name":"balanceOf","stateMutability":"view","inputs":[{"name":"address","type":"address"}],"outputs":[{"name":"","type":"uint256"}]},
             {"type":"function","name":"decimals","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"uint8"}]},
@@ -180,7 +171,6 @@ class Helios:
         self.access_tokens = {}
         self.used_nonce = {}
         
-        # Transaction counters
         self.bridge_count = 0
         self.bridge_amount = 0
         self.delegate_count = 0
@@ -190,20 +180,11 @@ class Helios:
         self.weth_amount = 0
         self.wbnb_amount = 0
         
-        # Delays
         self.min_delay = 0
         self.max_delay = 0
 
     def clear_terminal(self):
         clear_console()
-
-    def log(self, message):
-        # This function is now deprecated in favor of the new Logger class
-        logger.info(message)
-
-    def welcome(self):
-        # The main welcome screen is now handled by display_welcome_screen
-        pass
 
     def format_seconds(self, seconds):
         hours, remainder = divmod(seconds, 3600)
@@ -568,7 +549,7 @@ class Helios:
     def print_bridge_question(self):
         while True:
             try:
-                bridge_count = int(input(f"{Colors.YELLOW}{Colors.BOLD}Bridge Count For Each Wallet -> {Colors.RESET}").strip())
+                bridge_count = int(input(f"{Colors.GREEN}{Colors.BOLD}Bridge Count For Each Wallet:{Colors.RESET} ").strip())
                 if bridge_count > 0:
                     self.bridge_count = bridge_count
                     break
@@ -579,7 +560,7 @@ class Helios:
 
         while True:
             try:
-                bridge_amount = float(input(f"{Colors.YELLOW}{Colors.BOLD}Enter Bridge Amount [1 or 0.01 or 0.001, etc in decimals] -> {Colors.RESET}").strip())
+                bridge_amount = float(input(f"{Colors.GREEN}{Colors.BOLD}Enter Bridge Amount [1 or 0.01 or 0.001, etc in decimals]:{Colors.RESET} ").strip())
                 if bridge_amount > 0:
                     self.bridge_amount = bridge_amount
                     break
@@ -591,7 +572,7 @@ class Helios:
     def print_delegate_question(self):
         while True:
             try:
-                delegate_count = int(input(f"{Colors.YELLOW}{Colors.BOLD}Delegate Count For Each Wallet -> {Colors.RESET}").strip())
+                delegate_count = int(input(f"{Colors.GREEN}{Colors.BOLD}Delegate Count For Each Wallet:{Colors.RESET} ").strip())
                 if delegate_count > 0:
                     self.delegate_count = delegate_count
                     break
@@ -602,7 +583,7 @@ class Helios:
 
         while True:
             try:
-                delegate_amount = float(input(f"{Colors.YELLOW}{Colors.BOLD}Enter Delegate Amount [1 or 0.01 or 0.001, etc in decimals] -> {Colors.RESET}").strip())
+                delegate_amount = float(input(f"{Colors.GREEN}{Colors.BOLD}Enter Delegate Amount [1 or 0.01 or 0.001, etc in decimals]:{Colors.RESET} ").strip())
                 if delegate_amount > 0:
                     self.delegate_amount = delegate_amount
                     break
@@ -614,7 +595,7 @@ class Helios:
     def print_swap_question(self):
         while True:
             try:
-                swap_count = int(input(f"{Colors.YELLOW}{Colors.BOLD}Swap Count For Each Wallet -> {Colors.RESET}").strip())
+                swap_count = int(input(f"{Colors.GREEN}{Colors.BOLD}Swap Count For Each Wallet:{Colors.RESET} ").strip())
                 if swap_count > 0:
                     self.swap_count = swap_count
                     break
@@ -626,7 +607,7 @@ class Helios:
     def print_helios_question(self):
         while True:
             try:
-                helios_amount = float(input(f"{Colors.YELLOW}{Colors.BOLD}Enter HLS Amount -> {Colors.RESET}").strip())
+                helios_amount = float(input(f"{Colors.GREEN}{Colors.BOLD}Enter HLS Amount:{Colors.RESET} ").strip())
                 if helios_amount > 0:
                     self.helios_amount = helios_amount
                     break
@@ -638,7 +619,7 @@ class Helios:
     def print_weth_question(self):
         while True:
             try:
-                weth_amount = float(input(f"{Colors.YELLOW}{Colors.BOLD}Enter WETH Amount -> {Colors.RESET}").strip())
+                weth_amount = float(input(f"{Colors.GREEN}{Colors.BOLD}Enter WETH Amount:{Colors.RESET} ").strip())
                 if weth_amount > 0:
                     self.weth_amount = weth_amount
                     break
@@ -650,7 +631,7 @@ class Helios:
     def print_wbnb_question(self):
         while True:
             try:
-                wbnb_amount = float(input(f"{Colors.YELLOW}{Colors.BOLD}Enter WBNB Amount -> {Colors.RESET}").strip())
+                wbnb_amount = float(input(f"{Colors.GREEN}{Colors.BOLD}Enter WBNB Amount:{Colors.RESET} ").strip())
                 if wbnb_amount > 0:
                     self.wbnb_amount = wbnb_amount
                     break
@@ -662,7 +643,7 @@ class Helios:
     def print_delay_question(self):
         while True:
             try:
-                min_delay = int(input(f"{Colors.YELLOW}{Colors.BOLD}Min Delay For Each Tx -> {Colors.RESET}").strip())
+                min_delay = int(input(f"{Colors.YELLOW}{Colors.BOLD}Min Delay For Each Tx:{Colors.RESET} ").strip())
                 if min_delay >= 0:
                     self.min_delay = min_delay
                     break
@@ -673,7 +654,7 @@ class Helios:
 
         while True:
             try:
-                max_delay = int(input(f"{Colors.YELLOW}{Colors.BOLD}Max Delay For Each Tx -> {Colors.RESET}").strip())
+                max_delay = int(input(f"{Colors.YELLOW}{Colors.BOLD}Max Delay For Each Tx:{Colors.RESET} ").strip())
                 if max_delay >= min_delay:
                     self.max_delay = max_delay
                     break
@@ -684,8 +665,9 @@ class Helios:
          
     async def print_timer(self):
         for remaining in range(random.randint(self.min_delay, self.max_delay), 0, -1):
+            timestamp = datetime.now().astimezone(pytz.timezone('Asia/Jakarta')).strftime("%H:%M:%S")
             print(
-                f"{Colors.CYAN}{Colors.BOLD}[ {datetime.now().strftime('%x %X')} ]{Colors.RESET}"
+                f"{Colors.BRIGHT_BLACK}[{timestamp}]{Colors.RESET}"
                 f"{Colors.WHITE}{Colors.BOLD} | {Colors.RESET}"
                 f"{Colors.BLUE}{Colors.BOLD}Wait For{Colors.RESET}"
                 f"{Colors.WHITE}{Colors.BOLD} {remaining} {Colors.RESET}"
@@ -694,17 +676,18 @@ class Helios:
                 flush=True
             )
             await asyncio.sleep(1)
+        print(" " * 80, end="\r") # Clear the line after countdown
 
     def print_question(self):
         while True:
             try:
                 print(f"{Colors.GREEN}{Colors.BOLD}Select Option:{Colors.RESET}")
-                print(f"{Colors.WHITE}{Colors.BOLD}1. Claim HLS Faucet{Colors.RESET}")
-                print(f"{Colors.WHITE}{Colors.BOLD}2. Bridge HLS{Colors.RESET}")
-                print(f"{Colors.WHITE}{Colors.BOLD}3. Delegate HLS{Colors.RESET}")
-                print(f"{Colors.WHITE}{Colors.BOLD}4. Swap Tokens{Colors.RESET}")
-                print(f"{Colors.WHITE}{Colors.BOLD}5. Run All Features{Colors.RESET}")
-                option = int(input(f"{Colors.BLUE}{Colors.BOLD}Choose [1/2/3/4/5] -> {Colors.RESET}").strip())
+                print(f"{Colors.GREEN}{Colors.BOLD}1. Claim HLS Faucet{Colors.RESET}")
+                print(f"{Colors.GREEN}{Colors.BOLD}2. Bridge HLS{Colors.RESET}")
+                print(f"{Colors.GREEN}{Colors.BOLD}3. Delegate HLS{Colors.RESET}")
+                print(f"{Colors.GREEN}{Colors.BOLD}4. Swap Tokens{Colors.RESET}")
+                print(f"{Colors.GREEN}{Colors.BOLD}5. Run All Features{Colors.RESET}")
+                option = int(input(f"{Colors.WHITE}{Colors.BOLD}Choose [1/2/3/4/5]:{Colors.RESET} ").strip())
 
                 if option in [1, 2, 3, 4, 5]:
                     option_type = (
@@ -747,28 +730,26 @@ class Helios:
 
         while True:
             try:
-                print(f"{Colors.WHITE}{Colors.BOLD}1. Run With Free Proxyscrape Proxy{Colors.RESET}")
-                print(f"{Colors.WHITE}{Colors.BOLD}2. Run With Private Proxy{Colors.RESET}")
-                print(f"{Colors.WHITE}{Colors.BOLD}3. Run Without Proxy{Colors.RESET}")
-                choose = int(input(f"{Colors.BLUE}{Colors.BOLD}Choose [1/2/3] -> {Colors.RESET}").strip())
+                print(f"{Colors.WHITE}{Colors.BOLD}1. Run With Private Proxy{Colors.RESET}")
+                print(f"{Colors.WHITE}{Colors.BOLD}2. Run Without Proxy{Colors.RESET}")
+                choose = int(input(f"{Colors.WHITE}{Colors.BOLD}Choose [1/2]:{Colors.RESET} ").strip())
 
-                if choose in [1, 2, 3]:
+                if choose in [1, 2]:
                     proxy_type = (
-                        "With Free Proxyscrape" if choose == 1 else 
-                        "With Private" if choose == 2 else 
+                        "With Private" if choose == 1 else 
                         "Without"
                     )
                     logger.success(f"Run {proxy_type} Proxy Selected.")
                     break
                 else:
-                    logger.error("Please enter either 1, 2 or 3.")
+                    logger.error("Please enter either 1 or 2.")
             except ValueError:
-                logger.error("Invalid input. Enter a number (1, 2 or 3).")
+                logger.error("Invalid input. Enter a number (1 or 2).")
 
         rotate = False
-        if choose in [1, 2]:
+        if choose == 1:
             while True:
-                rotate = input(f"{Colors.BLUE}{Colors.BOLD}Rotate Invalid Proxy? [y/n] -> {Colors.RESET}").strip()
+                rotate = input(f"{Colors.BLUE}{Colors.BOLD}Rotate Invalid Proxy? [y/n]:{Colors.RESET} ").strip()
 
                 if rotate in ["y", "n"]:
                     rotate = rotate == "y"
@@ -1087,7 +1068,7 @@ class Helios:
             elif option == 4:
                 await self.process_option_4(account, address, use_proxy_choice)
 
-            else: # Option 5: Run All Features
+            else:
                 await self.process_option_1(address, use_proxy_choice)
                 await asyncio.sleep(5)
 
@@ -1113,7 +1094,7 @@ class Helios:
             option, use_proxy_choice, rotate_proxy = self.print_question()
 
             use_proxy = False
-            if use_proxy_choice in [1, 2]:
+            if use_proxy_choice == 1:
                 use_proxy = True
 
             while True:
@@ -1148,10 +1129,10 @@ class Helios:
                 seconds = 24 * 60 * 60
                 while seconds > 0:
                     formatted_time = self.format_seconds(seconds)
+                    timestamp = datetime.now().astimezone(pytz.timezone('Asia/Jakarta')).strftime("%H:%M:%S")
                     print(
-                        f"{Colors.CYAN}{Colors.BOLD}[ Wait for {formatted_time} ... ]{Colors.RESET}"
-                        f"{Colors.WHITE}{Colors.BOLD} | {Colors.RESET}"
-                        f"{Colors.BLUE}{Colors.BOLD}All Accounts Have Been Processed.{Colors.RESET}",
+                        f"{Colors.BRIGHT_BLACK}[{timestamp}]{Colors.RESET}"
+                        f"{Colors.CYAN}{Colors.BOLD} | All Tasks Completed. Wait for {formatted_time} ... {Colors.RESET}",
                         end="\r"
                     )
                     await asyncio.sleep(1)
