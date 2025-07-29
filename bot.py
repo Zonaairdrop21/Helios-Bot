@@ -7,7 +7,7 @@ from aiohttp import ClientResponseError, ClientSession, ClientTimeout, BasicAuth
 from aiohttp_socks import ProxyConnector
 from fake_useragent import FakeUserAgent
 from datetime import datetime
-from colorama import init, Fore, Style
+from colorama import init, Fore, Style # Updated import for colorama
 import asyncio, random, json, re, os
 from dotenv import load_dotenv
 
@@ -29,6 +29,7 @@ class Colors:
     BRIGHT_MAGENTA = Fore.LIGHTMAGENTA_EX
     BRIGHT_WHITE = Fore.LIGHTWHITE_EX
     BRIGHT_BLACK = Fore.LIGHTBLACK_EX
+    BLUE = Fore.BLUE # Added BLUE attribute
 
 class Logger:
     @staticmethod
