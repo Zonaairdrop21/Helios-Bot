@@ -15,7 +15,6 @@ import asyncio, random, json, re, os
 init(autoreset=True)
 load_dotenv()
 
-# === Terminal Color Setup ===
 class Colors:
     RESET = Style.RESET_ALL
     BOLD = Style.BRIGHT
@@ -130,11 +129,11 @@ class Helios:
         now = datetime.now()
         print(f"{Colors.BRIGHT_GREEN}{Colors.BOLD}")
         print("  ╔══════════════════════════════════════╗")
-        print("  ║           D Z A P  B O T           ║")
+        print("  ║           HELIOS  B O T           ║")
         print("  ║                                    ║")
         print(f"  ║      {Colors.YELLOW}{now.strftime('%H:%M:%S %d.%m.%Y')}{Colors.BRIGHT_GREEN}            ║")
         print("  ║                                    ║")
-        print("  ║      MONAD TESTNET AUTOMATION      ║")
+        print("  ║      Helios TESTNET AUTOMATION      ║")
         print(f"  ║   {Colors.BRIGHT_WHITE}ZonaAirdrop{Colors.BRIGHT_GREEN}  |  t.me/ZonaAirdr0p  ║")
         print("  ╚══════════════════════════════════════╝")
         print(f"{Colors.RESET}")
