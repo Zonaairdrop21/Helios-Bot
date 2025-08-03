@@ -514,11 +514,11 @@ class Helios:
         while True:
             try:
                 print(f"{Fore.YELLOW + Style.BRIGHT}Select Option:{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}1. Claim Delegate Rewards{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}2. Vote Governance Proposal{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}3. Deploy Token Contract{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}4. Run All Features{Style.RESET_ALL}")
-                option = int(input(f"{Fore.BLUE + Style.BRIGHT}Choose [1/2/3/4] -> {Style.RESET_ALL}").strip())
+                print(f"{Fore.YELLOW + Style.BRIGHT}1. Claim Delegate Rewards{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW + Style.BRIGHT}2. Vote Governance Proposal{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW + Style.BRIGHT}3. Deploy Token Contract{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW + Style.BRIGHT}4. Run All Features{Style.RESET_ALL}")
+                option = int(input(f"{Fore.WHITE + Style.BRIGHT}Choose [1/2/3/4] -> {Style.RESET_ALL}").strip())
 
                 if option in [1, 2, 3, 4]:
                     option_type = (
