@@ -513,7 +513,7 @@ class Helios:
     def print_question(self):
         while True:
             try:
-                print(f"{Fore.GREEN + Style.BRIGHT}Select Option:{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW + Style.BRIGHT}Select Option:{Style.RESET_ALL}")
                 print(f"{Fore.WHITE + Style.BRIGHT}1. Claim Delegate Rewards{Style.RESET_ALL}")
                 print(f"{Fore.WHITE + Style.BRIGHT}2. Vote Governance Proposal{Style.RESET_ALL}")
                 print(f"{Fore.WHITE + Style.BRIGHT}3. Deploy Token Contract{Style.RESET_ALL}")
