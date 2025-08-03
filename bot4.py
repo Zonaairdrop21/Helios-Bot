@@ -126,28 +126,6 @@ class Helios:
     def clear_terminal(self):
         os.system('cls' if os.name == 'nt' else 'clear')
 
-    def log(self, message):
-        print(
-            f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().strftime('%x %X')} ]{Style.RESET_ALL}"
-            f"{Fore.WHITE + Style.BRIGHT} | {Style.RESET_ALL}{message}",
-            flush=True
-        )
-
-    async def display_welcome_screen(self):
-        clear_console()
-        now = datetime.now()
-        print(f"{Colors.BRIGHT_GREEN}{Colors.BOLD}")
-        print("  ╔══════════════════════════════════════╗")
-        print("  ║           D Z A P  B O T           ║")
-        print("  ║                                    ║")
-        print(f"  ║      {Colors.YELLOW}{now.strftime('%H:%M:%S %d.%m.%Y')}{Colors.BRIGHT_GREEN}            ║")
-        print("  ║                                    ║")
-        print("  ║      MONAD TESTNET AUTOMATION      ║")
-        print(f"  ║   {Colors.BRIGHT_WHITE}ZonaAirdrop{Colors.BRIGHT_GREEN}  |  t.me/ZonaAirdr0p  ║")
-        print("  ╚══════════════════════════════════════╝")
-        print(f"{Colors.RESET}")
-        await asyncio.sleep(1)
-
     def format_seconds(self, seconds):
         hours, remainder = divmod(seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
@@ -531,31 +509,31 @@ class Helios:
         while True:
             try:
                 print(f"{Fore.GREEN + Style.BRIGHT}Select Option:{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}1. Claim Delegate Rewards{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}2. Vote Governance Proposal{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}3. Deploy Token Contract{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}4. Run All Features{Style.RESET_ALL}")
-                option = int(input(f"{Fore.BLUE + Style.BRIGHT}Choose [1/2/3/4] -> {Style.RESET_ALL}").strip())
+                print(f"{Fore.WHITE + Style.BRIGHT}4. Claim Delegate Rewards{Style.RESET_ALL}")
+                print(f"{Fore.WHITE + Style.BRIGHT}5. Vote Governance Proposal{Style.RESET_ALL}")
+                print(f"{Fore.WHITE + Style.BRIGHT}6. Deploy Token Contract{Style.RESET_ALL}")
+                print(f"{Fore.WHITE + Style.BRIGHT}7. Run All Features{Style.RESET_ALL}")
+                option = int(input(f"{Fore.BLUE + Style.BRIGHT}Choose [4/5/6/7] -> {Style.RESET_ALL}").strip())
 
-                if option in [1, 2, 3, 4]:
+                if option in [4, 5, 6, 7]:
                     option_type = (
-                        "Claim Delegate Rewards" if option == 1 else 
-                        "Vote Governance Proposal" if option == 2 else 
-                        "Deploy Token Contract" if option == 3 else 
+                        "Claim Delegate Rewards" if option == 4 else 
+                        "Vote Governance Proposal" if option == 5 else 
+                        "Deploy Token Contract" if option == 6 else 
                         "Run All Features"
                     )
                     print(f"{Fore.GREEN + Style.BRIGHT}{option_type} Selected.{Style.RESET_ALL}")
                     break
                 else:
-                    print(f"{Fore.RED + Style.BRIGHT}Please enter either 1, 2, 3, or 4.{Style.RESET_ALL}")
+                    print(f"{Fore.RED + Style.BRIGHT}Please enter either 4, 5, 6, or 7.{Style.RESET_ALL}")
             except ValueError:
-                print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number (1, 2, 3, or 4).{Style.RESET_ALL}")
+                print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number (4, 5, 6, or 7).{Style.RESET_ALL}")
             
-        if option == 3:
+        if option == 6:
             self.print_deploy_question()
             self.print_delay_question()
             
-        elif option == 4:
+        elif option == 7:
             self.print_deploy_question()
             self.print_delay_question()
 
@@ -776,13 +754,13 @@ class Helios:
             logger.error(f"Login Failed")
             return False
         
-    async def process_option_1(self, account: str, address: str, use_proxy: bool):
+    async def process_option_4(self, account: str, address: str, use_proxy: bool):
         logger.step(f"Claiming Rewards")
         
         await self.process_perform_claim_rewards(account, address, use_proxy)
         await self.print_timer()
 
-    async def process_option_2(self, account: str, address: str, use_proxy: bool):
+    async def process_option_5(self, account: str, address: str, use_proxy: bool):
         logger.step(f"Voting on Proposal")
 
         proposals = await self.process_fetch_proposal(address, use_proxy)
@@ -800,7 +778,7 @@ class Helios:
         await self.process_perform_vote_proposal(account, address, proposal_id, use_proxy)
         await self.print_timer()
 
-    async def process_option_3(self, account: str, address: str, use_proxy: bool):
+    async def process_option_6(self, account: str, address: str, use_proxy: bool):
         logger.step(f"Deploying Contract")
 
         for i in range(self.deploy_count):
@@ -826,23 +804,23 @@ class Helios:
             
             self.used_nonce[address] = web3.eth.get_transaction_count(address, "pending")
 
-            if option == 1:
-                await self.process_option_1(account, address, use_proxy)
+            if option == 4:
+                await self.process_option_4(account, address, use_proxy)
 
-            elif option == 2:
-                await self.process_option_2(account, address, use_proxy)
+            elif option == 5:
+                await self.process_option_5(account, address, use_proxy)
 
-            elif option == 3:
-                await self.process_option_3(account, address, use_proxy)
+            elif option == 6:
+                await self.process_option_6(account, address, use_proxy)
 
-            elif option == 4:
-                await self.process_option_1(account, address, use_proxy)
+            elif option == 7:
+                await self.process_option_4(account, address, use_proxy)
                 await asyncio.sleep(5)
                 
-                await self.process_option_2(account, address, use_proxy)
+                await self.process_option_5(account, address, use_proxy)
                 await asyncio.sleep(5)
                 
-                await self.process_option_3(account, address, use_proxy)
+                await self.process_option_6(account, address, use_proxy)
                 await asyncio.sleep(5)
 
     async def main(self):
@@ -861,7 +839,7 @@ class Helios:
                 use_proxy = True
 
             while True:
-                clear_console()
+                self.clear_terminal()
                 await self.display_welcome_screen()
                 logger.info(f"Account's Total: {len(accounts)}")
 
