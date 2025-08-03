@@ -8,10 +8,50 @@ from aiohttp import ClientResponseError, ClientSession, ClientTimeout, BasicAuth
 from aiohttp_socks import ProxyConnector
 from fake_useragent import FakeUserAgent
 from datetime import datetime
-from colorama import *
-import asyncio, random, json, re, os, pytz
+from colorama import init, Fore, Style
+import asyncio, random, json, re, os
 
-wib = pytz.timezone('Asia/Jakarta')
+init(autoreset=True)
+
+# === Terminal Color Setup ===
+class Colors:
+    RESET = Style.RESET_ALL
+    BOLD = Style.BRIGHT
+    GREEN = Fore.GREEN
+    YELLOW = Fore.YELLOW
+    RED = Fore.RED
+    CYAN = Fore.CYAN
+    MAGENTA = Fore.MAGENTA
+    WHITE = Fore.WHITE
+    BRIGHT_GREEN = Fore.LIGHTGREEN_EX
+    BRIGHT_MAGENTA = Fore.LIGHTMAGENTA_EX
+    BRIGHT_WHITE = Fore.LIGHTWHITE_EX
+    BRIGHT_BLACK = Fore.LIGHTBLACK_EX
+
+class Logger:
+    @staticmethod
+    def log(label, symbol, msg, color):
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        print(f"{Colors.BRIGHT_BLACK}[{timestamp}]{Colors.RESET} {color}[{symbol}] {msg}{Colors.RESET}")
+
+    @staticmethod
+    def info(msg): Logger.log("INFO", "✓", msg, Colors.GREEN)
+    @staticmethod
+    def warn(msg): Logger.log("WARN", "!", msg, Colors.YELLOW)
+    @staticmethod
+    def error(msg): Logger.log("ERR", "✗", msg, Colors.RED)
+    @staticmethod
+    def success(msg): Logger.log("OK", "+", msg, Colors.GREEN)
+    @staticmethod
+    def loading(msg): Logger.log("LOAD", "⟳", msg, Colors.CYAN)
+    @staticmethod
+    def step(msg): Logger.log("STEP", "➤", msg, Colors.WHITE)
+    @staticmethod
+    def action(msg): Logger.log("ACTION", "↪️", msg, Colors.CYAN)
+    @staticmethod
+    def actionSuccess(msg): Logger.log("ACTION", "✅", msg, Colors.GREEN)
+
+logger = Logger()
 
 install_solc('0.8.20')
 set_solc_version('0.8.20')
@@ -86,20 +126,23 @@ class Helios:
 
     def log(self, message):
         print(
-            f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().astimezone(wib).strftime('%x %X %Z')} ]{Style.RESET_ALL}"
+            f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().strftime('%x %X')} ]{Style.RESET_ALL}"
             f"{Fore.WHITE + Style.BRIGHT} | {Style.RESET_ALL}{message}",
             flush=True
         )
 
     def welcome(self):
-        print(
-            f"""
-        {Fore.GREEN + Style.BRIGHT}Helios Testnet{Fore.BLUE + Style.BRIGHT} Auto BOT
-            """
-            f"""
-        {Fore.GREEN + Style.BRIGHT}Rey? {Fore.YELLOW + Style.BRIGHT}<INI WATERMARK>
-            """
-        )
+        now = datetime.now()
+        print(f"{Colors.BRIGHT_GREEN}{Colors.BOLD}")
+        print("  ╔══════════════════════════════════════╗")
+        print("  ║           D Z A P  B O T           ║")
+        print("  ║                                    ║")
+        print(f"  ║      {Colors.YELLOW}{now.strftime('%H:%M:%S %d.%m.%Y')}{Colors.BRIGHT_GREEN}            ║")
+        print("  ║                                    ║")
+        print("  ║      MONAD TESTNET AUTOMATION      ║")
+        print(f"  ║   {Colors.BRIGHT_WHITE}ZonaAirdrop{Colors.BRIGHT_GREEN}  |  t.me/ZonaAirdr0p  ║")
+        print("  ╚══════════════════════════════════════╝")
+        print(f"{Colors.RESET}")
 
     def format_seconds(self, seconds):
         hours, remainder = divmod(seconds, 3600)
@@ -332,16 +375,16 @@ class Helios:
 
             tx_hash = await self.send_raw_transaction_with_retries(account, web3, claim_tx)
             receipt = await self.wait_for_receipt_with_retries(web3, tx_hash)
-            block_number = receipt.blockNumber
+            # block_number = receipt.blockNumber
             self.used_nonce[address] += 1
 
-            return tx_hash, block_number
+            return tx_hash
         except Exception as e:
             self.log(
                 f"{Fore.CYAN+Style.BRIGHT}   Message  :{Style.RESET_ALL}"
                 f"{Fore.RED+Style.BRIGHT} {str(e)} {Style.RESET_ALL}"
             )
-            return None, None
+            return None
         
     async def perform_vote_proposal(self, account: str, address: str, proposal_id: int, use_proxy: bool):
         try:
@@ -368,16 +411,16 @@ class Helios:
 
             tx_hash = await self.send_raw_transaction_with_retries(account, web3, vote_tx)
             receipt = await self.wait_for_receipt_with_retries(web3, tx_hash)
-            block_number = receipt.blockNumber
+            # block_number = receipt.blockNumber
             self.used_nonce[address] += 1
 
-            return tx_hash, block_number
+            return tx_hash
         except Exception as e:
             self.log(
                 f"{Fore.CYAN+Style.BRIGHT}   Message  :{Style.RESET_ALL}"
                 f"{Fore.RED+Style.BRIGHT} {str(e)} {Style.RESET_ALL}"
             )
-            return None, None
+            return None
         
     async def perform_deploy_contract(self, account: str, address: str, token_name: str, token_symbol: str, total_supply: int, use_proxy: bool):
         try:
@@ -451,11 +494,11 @@ class Helios:
 
             tx_hash = await self.send_raw_transaction_with_retries(account, web3, tx)
             receipt = await self.wait_for_receipt_with_retries(web3, tx_hash)
-            block_number = receipt.blockNumber
+            # block_number = receipt.blockNumber
             contract_address = receipt.contractAddress
             self.used_nonce[address] += 1
 
-            return tx_hash, block_number, contract_address
+            return tx_hash, contract_address
 
         except Exception as e:
             self.log(
@@ -502,7 +545,7 @@ class Helios:
     async def print_timer(self):
         for remaining in range(random.randint(self.min_delay, self.max_delay), 0, -1):
             print(
-                f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().astimezone(wib).strftime('%x %X %Z')} ]{Style.RESET_ALL}"
+                f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().strftime('%x %X')} ]{Style.RESET_ALL}"
                 f"{Fore.WHITE + Style.BRIGHT} | {Style.RESET_ALL}"
                 f"{Fore.BLUE + Style.BRIGHT}Wait For{Style.RESET_ALL}"
                 f"{Fore.WHITE + Style.BRIGHT} {remaining} {Style.RESET_ALL}"
@@ -516,45 +559,45 @@ class Helios:
         while True:
             try:
                 print(f"{Fore.GREEN + Style.BRIGHT}Select Option:{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}4. Claim Delegate Rewards{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}5. Vote Governance Proposal{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}6. Deploy Token Contract{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}7. Run All Features{Style.RESET_ALL}")
-                option = int(input(f"{Fore.BLUE + Style.BRIGHT}Choose [4/5/6/7] -> {Style.RESET_ALL}").strip())
+                print(f"{Fore.WHITE + Style.BRIGHT}1. Claim Delegate Rewards{Style.RESET_ALL}")
+                print(f"{Fore.WHITE + Style.BRIGHT}2. Vote Governance Proposal{Style.RESET_ALL}")
+                print(f"{Fore.WHITE + Style.BRIGHT}3. Deploy Token Contract{Style.RESET_ALL}")
+                print(f"{Fore.WHITE + Style.BRIGHT}4. Run All Features{Style.RESET_ALL}")
+                option = int(input(f"{Fore.BLUE + Style.BRIGHT}Choose [1/2/3/4] -> {Style.RESET_ALL}").strip())
 
-                if option in [4, 5, 6, 7]:
+                if option in [1, 2, 3, 4]:
                     option_type = (
-                        "Claim Delegate Rewards" if option == 4 else 
-                        "Vote Governance Proposal" if option == 5 else 
-                        "Deploy Token Contract" if option == 6 else 
+                        "Claim Delegate Rewards" if option == 1 else 
+                        "Vote Governance Proposal" if option == 2 else 
+                        "Deploy Token Contract" if option == 3 else 
                         "Run All Features"
                     )
                     print(f"{Fore.GREEN + Style.BRIGHT}{option_type} Selected.{Style.RESET_ALL}")
                     break
                 else:
-                    print(f"{Fore.RED + Style.BRIGHT}Please enter either 4, 5, 6, or 7.{Style.RESET_ALL}")
+                    print(f"{Fore.RED + Style.BRIGHT}Please enter either 1, 2, 3, or 4.{Style.RESET_ALL}")
             except ValueError:
-                print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number (4, 5, 6, or 7).{Style.RESET_ALL}")
+                print(f"{Fore.RED + Style.BRIGHT}Invalid input. Enter a number (1, 2, 3, or 4).{Style.RESET_ALL}")
             
-        if option == 6:
+        if option == 3:
             self.print_deploy_question()
             self.print_delay_question()
             
-        elif option == 7:
+        elif option == 4:
             self.print_deploy_question()
             self.print_delay_question()
 
         while True:
             try:
-                print(f"{Fore.WHITE + Style.BRIGHT}1. Run With Free Proxyscrape Proxy{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}2. Run With Private Proxy{Style.RESET_ALL}")
+                print(f"{Fore.WHITE + Style.BRIGHT}1. Run With Private Proxy{Style.RESET_ALL}")
+                print(f"{Fore.WHITE + Style.BRIGHT}2. Run With Free Proxyscrape Proxy{Style.RESET_ALL}")
                 print(f"{Fore.WHITE + Style.BRIGHT}3. Run Without Proxy{Style.RESET_ALL}")
                 choose = int(input(f"{Fore.BLUE + Style.BRIGHT}Choose [1/2/3] -> {Style.RESET_ALL}").strip())
 
                 if choose in [1, 2, 3]:
                     proxy_type = (
-                        "With Free Proxyscrape" if choose == 1 else 
-                        "With Private" if choose == 2 else 
+                        "With Private" if choose == 1 else 
+                        "With Free Proxyscrape" if choose == 2 else 
                         "Without"
                     )
                     print(f"{Fore.GREEN + Style.BRIGHT}Run {proxy_type} Proxy Selected.{Style.RESET_ALL}")
@@ -584,7 +627,7 @@ class Helios:
 
                     if self.CAPTCHA_KEY is None:
                         self.log(
-                            f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                            f"{Fore.MAGENTA+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
                             f"{Fore.BLUE+Style.BRIGHT}Status  :{Style.RESET_ALL}"
                             f"{Fore.RED+Style.BRIGHT}Turnstile Not Solved{Style.RESET_ALL}"
                             f"{Fore.MAGENTA+Style.BRIGHT} - {Style.RESET_ALL}"
@@ -599,7 +642,7 @@ class Helios:
 
                         if 'OK|' not in result:
                             self.log(
-                                f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                                f"{Fore.MAGENTA+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
                                 f"{Fore.BLUE+Style.BRIGHT}Message :{Style.RESET_ALL}"
                                 f"{Fore.YELLOW + Style.BRIGHT}{result}{Style.RESET_ALL}"
                             )
@@ -609,7 +652,7 @@ class Helios:
                         request_id = result.split('|')[1]
 
                         self.log(
-                            f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                            f"{Fore.MAGENTA+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
                             f"{Fore.BLUE+Style.BRIGHT}Req Id  :{Style.RESET_ALL}"
                             f"{Fore.WHITE + Style.BRIGHT} {request_id} {Style.RESET_ALL}"
                         )
@@ -625,7 +668,7 @@ class Helios:
                                     return turnstile_token
                                 elif res_result == "CAPCHA_NOT_READY":
                                     self.log(
-                                        f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                                        f"{Fore.MAGENTA+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
                                         f"{Fore.BLUE+Style.BRIGHT}Message :{Style.RESET_ALL}"
                                         f"{Fore.YELLOW + Style.BRIGHT} Captcha Not Ready {Style.RESET_ALL}"
                                     )
@@ -639,7 +682,7 @@ class Helios:
                     await asyncio.sleep(5)
                     continue
                 self.log(
-                    f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                    f"{Fore.MAGENTA+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
                     f"{Fore.BLUE+Style.BRIGHT}Status  :{Style.RESET_ALL}"
                     f"{Fore.RED+Style.BRIGHT}Turnstile Not Solved{Style.RESET_ALL}"
                     f"{Fore.MAGENTA+Style.BRIGHT} - {Style.RESET_ALL}"
@@ -720,86 +763,36 @@ class Helios:
         return None
         
     async def process_perform_claim_rewards(self, account: str, address: str, use_proxy: bool):
-        tx_hash, block_number = await self.perform_claim_rewards(account, address, use_proxy)
-        if tx_hash and block_number:
+        tx_hash = await self.perform_claim_rewards(account, address, use_proxy)
+        if tx_hash:
             explorer = f"https://explorer.helioschainlabs.org/tx/{tx_hash}"
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Status   :{Style.RESET_ALL}"
-                f"{Fore.GREEN+Style.BRIGHT} Success {Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Block    :{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {block_number} {Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Tx Hash  :{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {tx_hash} {Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Explorer :{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {explorer} {Style.RESET_ALL}"
-            )
+            logger.actionSuccess(f"Success")
+            logger.action(f"Tx Hash: {tx_hash}")
+            logger.actionSuccess(f"Explorer: {explorer}")
         else:
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Status   :{Style.RESET_ALL}"
-                f"{Fore.RED+Style.BRIGHT} Perform On-Chain Failed {Style.RESET_ALL}"
-            )
+            logger.error(f"Perform On-Chain Failed")
+
 
     async def process_perform_vote_proposal(self, account: str, address: str, proposal_id: int, use_proxy: bool):
-        tx_hash, block_number = await self.perform_vote_proposal(account, address, proposal_id, use_proxy)
-        if tx_hash and block_number:
+        tx_hash = await self.perform_vote_proposal(account, address, proposal_id, use_proxy)
+        if tx_hash:
             explorer = f"https://explorer.helioschainlabs.org/tx/{tx_hash}"
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Status   :{Style.RESET_ALL}"
-                f"{Fore.GREEN+Style.BRIGHT} Success {Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Block    :{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {block_number} {Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Tx Hash  :{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {tx_hash} {Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Explorer :{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {explorer} {Style.RESET_ALL}"
-            )
+            logger.actionSuccess(f"Success")
+            logger.action(f"Tx Hash: {tx_hash}")
+            logger.actionSuccess(f"Explorer: {explorer}")
         else:
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Status   :{Style.RESET_ALL}"
-                f"{Fore.RED+Style.BRIGHT} Perform On-Chain Failed {Style.RESET_ALL}"
-            )
+            logger.error(f"Perform On-Chain Failed")
 
     async def process_perform_deploy_contract(self, account: str, address: str, token_name: str, token_symbol: str, total_supply: int, use_proxy: bool):
-        tx_hash, block_number, contract_address = await self.perform_deploy_contract(account, address, token_name, token_symbol, total_supply, use_proxy)
-        if tx_hash and block_number and contract_address:
+        tx_hash, contract_address = await self.perform_deploy_contract(account, address, token_name, token_symbol, total_supply, use_proxy)
+        if tx_hash and contract_address:
             explorer = f"https://explorer.helioschainlabs.org/tx/{tx_hash}"
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Status   :{Style.RESET_ALL}"
-                f"{Fore.GREEN+Style.BRIGHT} Success {Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Contract :{Style.RESET_ALL}"
-                f"{Fore.BLUE+Style.BRIGHT} {contract_address} {Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Block    :{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {block_number} {Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Tx Hash  :{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {tx_hash} {Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Explorer :{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {explorer} {Style.RESET_ALL}"
-            )
+            logger.actionSuccess(f"Success")
+            logger.action(f"Contract: {contract_address}")
+            logger.action(f"Tx Hash: {tx_hash}")
+            logger.actionSuccess(f"Explorer: {explorer}")
         else:
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Status   :{Style.RESET_ALL}"
-                f"{Fore.RED+Style.BRIGHT} Perform On-Chain Failed {Style.RESET_ALL}"
-            )
+            logger.error(f"Perform On-Chain Failed")
 
     async def process_fetch_proposal(self, address: str, use_proxy: bool):
         propsal_lists = await self.proposal_lists(address, use_proxy)
@@ -813,10 +806,7 @@ class Helios:
         ]
 
         if not live_proposals: 
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Message  :{Style.RESET_ALL}"
-                f"{Fore.RED+Style.BRIGHT} No Available Proposals {Style.RESET_ALL}"
-            )
+            logger.warn("No Available Proposals")
             return False
 
         used_proposals = random.choice(live_proposals)
@@ -860,14 +850,14 @@ class Helios:
             )
             return False
         
-    async def process_option_4(self, account: str, address: str, use_proxy: bool):
-        self.log(f"{Fore.CYAN+Style.BRIGHT}Rewards   :{Style.RESET_ALL}                       ")
+    async def process_option_1(self, account: str, address: str, use_proxy: bool):
+        logger.step(f"Claiming Rewards")
         
         await self.process_perform_claim_rewards(account, address, use_proxy)
         await self.print_timer()
 
-    async def process_option_5(self, account: str, address: str, use_proxy: bool):
-        self.log(f"{Fore.CYAN+Style.BRIGHT}Proposal  :{Style.RESET_ALL}                       ")
+    async def process_option_2(self, account: str, address: str, use_proxy: bool):
+        logger.step(f"Voting on Proposal")
 
         proposals = await self.process_fetch_proposal(address, use_proxy)
         if not proposals: return
@@ -893,12 +883,12 @@ class Helios:
         await self.process_perform_vote_proposal(account, address, proposal_id, use_proxy)
         await self.print_timer()
 
-    async def process_option_6(self, account: str, address: str, use_proxy: bool):
-        self.log(f"{Fore.CYAN+Style.BRIGHT}Deploy    :{Style.RESET_ALL}                       ")
+    async def process_option_3(self, account: str, address: str, use_proxy: bool):
+        logger.step(f"Deploying Contract")
 
         for i in range(self.deploy_count):
             self.log(
-                f"{Fore.GREEN+Style.BRIGHT} ● {Style.RESET_ALL}"
+                f"{Fore.GREEN+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
                 f"{Fore.WHITE+Style.BRIGHT}{i+1}{Style.RESET_ALL}"
                 f"{Fore.MAGENTA+Style.BRIGHT} Of {Style.RESET_ALL}"
                 f"{Fore.WHITE+Style.BRIGHT}{self.deploy_count}{Style.RESET_ALL}                                   "
@@ -939,23 +929,23 @@ class Helios:
             
             self.used_nonce[address] = web3.eth.get_transaction_count(address, "pending")
 
-            if option == 4:
-                await self.process_option_4(account, address, use_proxy)
+            if option == 1:
+                await self.process_option_1(account, address, use_proxy)
 
-            elif option == 5:
-                await self.process_option_5(account, address, use_proxy)
+            elif option == 2:
+                await self.process_option_2(account, address, use_proxy)
 
-            elif option == 6:
-                await self.process_option_6(account, address, use_proxy)
+            elif option == 3:
+                await self.process_option_3(account, address, use_proxy)
 
-            elif option == 7:
-                await self.process_option_4(account, address, use_proxy)
+            elif option == 4:
+                await self.process_option_1(account, address, use_proxy)
                 await asyncio.sleep(5)
                 
-                await self.process_option_5(account, address, use_proxy)
+                await self.process_option_2(account, address, use_proxy)
                 await asyncio.sleep(5)
                 
-                await self.process_option_6(account, address, use_proxy)
+                await self.process_option_3(account, address, use_proxy)
                 await asyncio.sleep(5)
 
     async def main(self):
@@ -1052,7 +1042,7 @@ if __name__ == "__main__":
         asyncio.run(bot.main())
     except KeyboardInterrupt:
         print(
-            f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().astimezone(wib).strftime('%x %X %Z')} ]{Style.RESET_ALL}"
+            f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().strftime('%x %X')} ]{Style.RESET_ALL}"
             f"{Fore.WHITE + Style.BRIGHT} | {Style.RESET_ALL}"
             f"{Fore.RED + Style.BRIGHT}[ EXIT ] Helios - BOT{Style.RESET_ALL}                                       "                              
         )
