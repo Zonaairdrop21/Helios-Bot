@@ -527,7 +527,7 @@ class Helios:
                         "Deploy Token Contract" if option == 3 else 
                         "Run All Features"
                     )
-                    print(f"{Fore.GREEN + Style.BRIGHT}{option_type} Selected.{Style.RESET_ALL}")
+                    print(f"{Fore.YELLOW + Style.BRIGHT}{option_type} Selected.{Style.RESET_ALL}")
                     break
                 else:
                     print(f"{Fore.RED + Style.BRIGHT}Please enter either 1, 2, 3, or 4.{Style.RESET_ALL}")
@@ -546,7 +546,7 @@ class Helios:
             try:
                 print(f"{Fore.WHITE + Style.BRIGHT}1. Run With Private Proxy{Style.RESET_ALL}")
                 print(f"{Fore.WHITE + Style.BRIGHT}2. Run Without Proxy{Style.RESET_ALL}")
-                choose = int(input(f"{Fore.BLUE + Style.BRIGHT}Choose [1/2] -> {Style.RESET_ALL}").strip())
+                choose = int(input(f"{Fore.WHITE + Style.BRIGHT}Choose [1/2] -> {Style.RESET_ALL}").strip())
 
                 if choose in [1, 2]:
                     proxy_type = (
