@@ -14,13 +14,15 @@ import asyncio, random, json, re, os, pytz
 
 wib = pytz.timezone('Asia/Jakarta')
 
-# Modifikasi untuk mengatasi masalah instalasi solc
+# --- MODIFIKASI DIMULAI DI SINI ---
 try:
+    install_solc('0.8.20')
     set_solc_version('0.8.20')
 except SolcInstallationError:
-    print("Failed to set solc version. Attempting to compile from source.")
+    print("Failed to install solc using pre-compiled binary. Attempting to compile from source.")
     compile_solc('0.8.20')
     set_solc_version('0.8.20')
+# --- MODIFIKASI BERAKHIR DI SINI ---
 
 class Helios:
     def __init__(self) -> None:
