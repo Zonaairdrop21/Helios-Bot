@@ -9,9 +9,11 @@ from aiohttp_socks import ProxyConnector
 from fake_useragent import FakeUserAgent
 from datetime import datetime
 from colorama import init, Fore, Style
+from dotenv import load_dotenv
 import asyncio, random, json, re, os
 
 init(autoreset=True)
+load_dotenv()
 
 # === Terminal Color Setup ===
 class Colors:
@@ -131,7 +133,8 @@ class Helios:
             flush=True
         )
 
-    def welcome(self):
+    async def display_welcome_screen(self):
+        clear_console()
         now = datetime.now()
         print(f"{Colors.BRIGHT_GREEN}{Colors.BOLD}")
         print("  ╔══════════════════════════════════════╗")
@@ -143,6 +146,7 @@ class Helios:
         print(f"  ║   {Colors.BRIGHT_WHITE}ZonaAirdrop{Colors.BRIGHT_GREEN}  |  t.me/ZonaAirdr0p  ║")
         print("  ╚══════════════════════════════════════╝")
         print(f"{Colors.RESET}")
+        await asyncio.sleep(1)
 
     def format_seconds(self, seconds):
         hours, remainder = divmod(seconds, 3600)
@@ -170,22 +174,21 @@ class Helios:
                         self.proxies = [line.strip() for line in content.splitlines() if line.strip()]
             else:
                 if not os.path.exists(filename):
-                    self.log(f"{Fore.RED + Style.BRIGHT}File {filename} Not Found.{Style.RESET_ALL}")
+                    logger.error(f"File {filename} Not Found.")
                     return
                 with open(filename, 'r') as f:
                     self.proxies = [line.strip() for line in f.read().splitlines() if line.strip()]
             
             if not self.proxies:
-                self.log(f"{Fore.RED + Style.BRIGHT}No Proxies Found.{Style.RESET_ALL}")
+                logger.error(f"No Proxies Found.")
                 return
 
-            self.log(
-                f"{Fore.GREEN + Style.BRIGHT}Proxies Total  : {Style.RESET_ALL}"
-                f"{Fore.WHITE + Style.BRIGHT}{len(self.proxies)}{Style.RESET_ALL}"
+            logger.info(
+                f"Proxies Total  : {len(self.proxies)}"
             )
         
         except Exception as e:
-            self.log(f"{Fore.RED + Style.BRIGHT}Failed To Load Proxies: {e}{Style.RESET_ALL}")
+            logger.error(f"Failed To Load Proxies: {e}")
             self.proxies = []
 
     def check_proxy_schemes(self, proxies):
@@ -237,12 +240,7 @@ class Helios:
             address = account.address
             return address
         except Exception as e:
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}Status    :{Style.RESET_ALL}"
-                f"{Fore.RED+Style.BRIGHT} Generate Address Failed {Style.RESET_ALL}"
-                f"{Fore.MAGENTA+Style.BRIGHT}-{Style.RESET_ALL}"
-                f"{Fore.YELLOW+Style.BRIGHT} {str(e)} {Style.RESET_ALL}                  "
-            )
+            logger.error(f"Generate Address Failed - {str(e)}")
             return None
         
     def generate_payload(self, account: str, address: str):
@@ -259,12 +257,7 @@ class Helios:
 
             return payload
         except Exception as e:
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}Status    :{Style.RESET_ALL}"
-                f"{Fore.RED+Style.BRIGHT} Generate Req Payload Failed {Style.RESET_ALL}"
-                f"{Fore.MAGENTA+Style.BRIGHT}-{Style.RESET_ALL}"
-                f"{Fore.YELLOW+Style.BRIGHT} {str(e)} {Style.RESET_ALL}                  "
-            )
+            logger.error(f"Generate Req Payload Failed - {str(e)}")
             return None
         
     def mask_account(self, account):
@@ -312,10 +305,7 @@ class Helios:
             except TransactionNotFound:
                 pass
             except Exception as e:
-                self.log(
-                    f"{Fore.CYAN + Style.BRIGHT}   Message  :{Style.RESET_ALL}"
-                    f"{Fore.YELLOW + Style.BRIGHT} [Attempt {attempt + 1}] Send TX Error: {str(e)} {Style.RESET_ALL}"
-                )
+                logger.warn(f" [Attempt {attempt + 1}] Send TX Error: {str(e)}")
             await asyncio.sleep(2 ** attempt)
         raise Exception("Transaction Hash Not Found After Maximum Retries")
 
@@ -327,10 +317,7 @@ class Helios:
             except TransactionNotFound:
                 pass
             except Exception as e:
-                self.log(
-                    f"{Fore.CYAN + Style.BRIGHT}   Message  :{Style.RESET_ALL}"
-                    f"{Fore.YELLOW + Style.BRIGHT} [Attempt {attempt + 1}] Wait for Receipt Error: {str(e)} {Style.RESET_ALL}"
-                )
+                logger.warn(f" [Attempt {attempt + 1}] Wait for Receipt Error: {str(e)}")
             await asyncio.sleep(2 ** attempt)
         raise Exception("Transaction Receipt Not Found After Maximum Retries")
         
@@ -346,10 +333,7 @@ class Helios:
 
             return token_balance
         except Exception as e:
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Message  :{Style.RESET_ALL}"
-                f"{Fore.RED+Style.BRIGHT} {str(e)} {Style.RESET_ALL}"
-            )
+            logger.error(f"{str(e)}")
             return None
         
     async def perform_claim_rewards(self, account: str, address: str, use_proxy: bool):
@@ -375,15 +359,11 @@ class Helios:
 
             tx_hash = await self.send_raw_transaction_with_retries(account, web3, claim_tx)
             receipt = await self.wait_for_receipt_with_retries(web3, tx_hash)
-            # block_number = receipt.blockNumber
             self.used_nonce[address] += 1
 
             return tx_hash
         except Exception as e:
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Message  :{Style.RESET_ALL}"
-                f"{Fore.RED+Style.BRIGHT} {str(e)} {Style.RESET_ALL}"
-            )
+            logger.error(f"{str(e)}")
             return None
         
     async def perform_vote_proposal(self, account: str, address: str, proposal_id: int, use_proxy: bool):
@@ -411,15 +391,11 @@ class Helios:
 
             tx_hash = await self.send_raw_transaction_with_retries(account, web3, vote_tx)
             receipt = await self.wait_for_receipt_with_retries(web3, tx_hash)
-            # block_number = receipt.blockNumber
             self.used_nonce[address] += 1
 
             return tx_hash
         except Exception as e:
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Message  :{Style.RESET_ALL}"
-                f"{Fore.RED+Style.BRIGHT} {str(e)} {Style.RESET_ALL}"
-            )
+            logger.error(f"{str(e)}")
             return None
         
     async def perform_deploy_contract(self, account: str, address: str, token_name: str, token_symbol: str, total_supply: int, use_proxy: bool):
@@ -494,17 +470,13 @@ class Helios:
 
             tx_hash = await self.send_raw_transaction_with_retries(account, web3, tx)
             receipt = await self.wait_for_receipt_with_retries(web3, tx_hash)
-            # block_number = receipt.blockNumber
             contract_address = receipt.contractAddress
             self.used_nonce[address] += 1
 
             return tx_hash, contract_address
 
         except Exception as e:
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Message  :{Style.RESET_ALL}"
-                f"{Fore.RED+Style.BRIGHT} {str(e)} {Style.RESET_ALL}"
-            )
+            logger.error(f"{str(e)}")
             return None, None
         
     def print_deploy_question(self):
@@ -545,7 +517,7 @@ class Helios:
     async def print_timer(self):
         for remaining in range(random.randint(self.min_delay, self.max_delay), 0, -1):
             print(
-                f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().strftime('%x %X')} ]{Style.RESET_ALL}"
+                f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().strftime('%H:%M:%S')} ]{Style.RESET_ALL}"
                 f"{Fore.WHITE + Style.BRIGHT} | {Style.RESET_ALL}"
                 f"{Fore.BLUE + Style.BRIGHT}Wait For{Style.RESET_ALL}"
                 f"{Fore.WHITE + Style.BRIGHT} {remaining} {Style.RESET_ALL}"
@@ -589,15 +561,15 @@ class Helios:
 
         while True:
             try:
-                print(f"{Fore.WHITE + Style.BRIGHT}1. Run With Private Proxy{Style.RESET_ALL}")
-                print(f"{Fore.WHITE + Style.BRIGHT}2. Run With Free Proxyscrape Proxy{Style.RESET_ALL}")
+                print(f"{Fore.WHITE + Style.BRIGHT}1. Run With Free Proxyscrape Proxy{Style.RESET_ALL}")
+                print(f"{Fore.WHITE + Style.BRIGHT}2. Run With Private Proxy{Style.RESET_ALL}")
                 print(f"{Fore.WHITE + Style.BRIGHT}3. Run Without Proxy{Style.RESET_ALL}")
                 choose = int(input(f"{Fore.BLUE + Style.BRIGHT}Choose [1/2/3] -> {Style.RESET_ALL}").strip())
 
                 if choose in [1, 2, 3]:
                     proxy_type = (
-                        "With Private" if choose == 1 else 
-                        "With Free Proxyscrape" if choose == 2 else 
+                        "With Free Proxyscrape" if choose == 1 else 
+                        "With Private" if choose == 2 else 
                         "Without"
                     )
                     print(f"{Fore.GREEN + Style.BRIGHT}Run {proxy_type} Proxy Selected.{Style.RESET_ALL}")
@@ -626,13 +598,7 @@ class Helios:
                 async with ClientSession(timeout=ClientTimeout(total=60)) as session:
 
                     if self.CAPTCHA_KEY is None:
-                        self.log(
-                            f"{Fore.MAGENTA+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
-                            f"{Fore.BLUE+Style.BRIGHT}Status  :{Style.RESET_ALL}"
-                            f"{Fore.RED+Style.BRIGHT}Turnstile Not Solved{Style.RESET_ALL}"
-                            f"{Fore.MAGENTA+Style.BRIGHT} - {Style.RESET_ALL}"
-                            f"{Fore.YELLOW+Style.BRIGHT}2Captcha Key Is None{Style.RESET_ALL}"
-                        )
+                        logger.error(f"Turnstile Not Solved - 2Captcha Key Is None")
                         return None
                     
                     url = f"http://2captcha.com/in.php?key={self.CAPTCHA_KEY}&method=turnstile&sitekey={self.SITE_KEY}&pageurl={self.PAGE_URL}"
@@ -641,21 +607,13 @@ class Helios:
                         result = await response.text()
 
                         if 'OK|' not in result:
-                            self.log(
-                                f"{Fore.MAGENTA+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
-                                f"{Fore.BLUE+Style.BRIGHT}Message :{Style.RESET_ALL}"
-                                f"{Fore.YELLOW + Style.BRIGHT}{result}{Style.RESET_ALL}"
-                            )
+                            logger.warn(f"Message: {result}")
                             await asyncio.sleep(5)
                             continue
 
                         request_id = result.split('|')[1]
 
-                        self.log(
-                            f"{Fore.MAGENTA+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
-                            f"{Fore.BLUE+Style.BRIGHT}Req Id  :{Style.RESET_ALL}"
-                            f"{Fore.WHITE + Style.BRIGHT} {request_id} {Style.RESET_ALL}"
-                        )
+                        logger.info(f"Req Id: {request_id}")
 
                         for _ in range(30):
                             res_url = f"http://2captcha.com/res.php?key={self.CAPTCHA_KEY}&action=get&id={request_id}"
@@ -667,11 +625,7 @@ class Helios:
                                     turnstile_token = res_result.split('|')[1]
                                     return turnstile_token
                                 elif res_result == "CAPCHA_NOT_READY":
-                                    self.log(
-                                        f"{Fore.MAGENTA+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
-                                        f"{Fore.BLUE+Style.BRIGHT}Message :{Style.RESET_ALL}"
-                                        f"{Fore.YELLOW + Style.BRIGHT} Captcha Not Ready {Style.RESET_ALL}"
-                                    )
+                                    logger.warn(f"Message: Captcha Not Ready")
                                     await asyncio.sleep(5)
                                     continue
                                 else:
@@ -681,13 +635,7 @@ class Helios:
                 if attempt < retries - 1:
                     await asyncio.sleep(5)
                     continue
-                self.log(
-                    f"{Fore.MAGENTA+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
-                    f"{Fore.BLUE+Style.BRIGHT}Status  :{Style.RESET_ALL}"
-                    f"{Fore.RED+Style.BRIGHT}Turnstile Not Solved{Style.RESET_ALL}"
-                    f"{Fore.MAGENTA+Style.BRIGHT} - {Style.RESET_ALL}"
-                    f"{Fore.YELLOW+Style.BRIGHT}{str(e)}{Style.RESET_ALL}"
-                )
+                logger.error(f"Turnstile Not Solved - {str(e)}")
                 return None
     
     async def check_connection(self, proxy_url=None):
@@ -698,12 +646,7 @@ class Helios:
                     response.raise_for_status()
                     return True
         except (Exception, ClientResponseError) as e:
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}Status    :{Style.RESET_ALL}"
-                f"{Fore.RED+Style.BRIGHT} Connection Not 200 OK {Style.RESET_ALL}"
-                f"{Fore.MAGENTA+Style.BRIGHT}-{Style.RESET_ALL}"
-                f"{Fore.YELLOW+Style.BRIGHT} {str(e)} {Style.RESET_ALL}"
-            )
+            logger.error(f"Connection Not 200 OK - {str(e)}")
             return None
         
     async def user_login(self, account: str, address: str, use_proxy: bool, retries=5):
@@ -727,10 +670,7 @@ class Helios:
                 if attempt < retries - 1:
                     await asyncio.sleep(5)
                     continue
-                self.log(
-                    f"{Fore.CYAN+Style.BRIGHT}Message   :{Style.RESET_ALL}"
-                    f"{Fore.RED+Style.BRIGHT} {str(e)} {Style.RESET_ALL}"
-                )
+                logger.error(f"{str(e)}")
 
         return None
     
@@ -753,12 +693,7 @@ class Helios:
                 if attempt < retries - 1:
                     await asyncio.sleep(5)
                     continue
-                self.log(
-                    f"{Fore.CYAN+Style.BRIGHT}   Message  :{Style.RESET_ALL}"
-                    f"{Fore.RED+Style.BRIGHT} Fetch Proposal Lists Failed {Style.RESET_ALL}"
-                    f"{Fore.MAGENTA+Style.BRIGHT}-{Style.RESET_ALL}"
-                    f"{Fore.YELLOW+Style.BRIGHT} {str(e)} {Style.RESET_ALL}"
-                )
+                logger.error(f"Fetch Proposal Lists Failed - {str(e)}")
 
         return None
         
@@ -816,10 +751,7 @@ class Helios:
     async def process_check_connection(self, address: str, use_proxy: bool, rotate_proxy: bool):
         while True:
             proxy = self.get_next_proxy_for_account(address) if use_proxy else None
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}Proxy     :{Style.RESET_ALL}"
-                f"{Fore.WHITE + Style.BRIGHT} {proxy} {Style.RESET_ALL}"
-            )
+            logger.info(f"Proxy: {proxy}")
 
             is_valid = await self.check_connection(proxy)
             if not is_valid:
@@ -838,16 +770,10 @@ class Helios:
             if login and login.get("success", False):
                 self.access_tokens[address] = login["token"]
 
-                self.log(
-                    f"{Fore.CYAN+Style.BRIGHT}Status    :{Style.RESET_ALL}"
-                    f"{Fore.GREEN+Style.BRIGHT} Login Success {Style.RESET_ALL}"
-                )
+                logger.success(f"Login Success")
                 return True
 
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}Status    :{Style.RESET_ALL}"
-                f"{Fore.RED+Style.BRIGHT} Login Failed {Style.RESET_ALL}"
-            )
+            logger.error(f"Login Failed")
             return False
         
     async def process_option_1(self, account: str, address: str, use_proxy: bool):
@@ -867,18 +793,9 @@ class Helios:
         proposer = proposals["proposer"]
 
         
-        self.log(
-            f"{Fore.CYAN+Style.BRIGHT}   Prop. Id :{Style.RESET_ALL}"
-            f"{Fore.WHITE+Style.BRIGHT} {proposal_id} {Style.RESET_ALL}"
-        )
-        self.log(
-            f"{Fore.CYAN+Style.BRIGHT}   Title    :{Style.RESET_ALL}"
-            f"{Fore.WHITE+Style.BRIGHT} {title} {Style.RESET_ALL}"
-        )
-        self.log(
-            f"{Fore.CYAN+Style.BRIGHT}   Proposer :{Style.RESET_ALL}"
-            f"{Fore.BLUE+Style.BRIGHT} {proposer} {Style.RESET_ALL}"
-        )
+        logger.info(f"Prop. Id: {proposal_id}")
+        logger.info(f"Title: {title}")
+        logger.info(f"Proposer: {proposer}")
         
         await self.process_perform_vote_proposal(account, address, proposal_id, use_proxy)
         await self.print_timer()
@@ -887,31 +804,14 @@ class Helios:
         logger.step(f"Deploying Contract")
 
         for i in range(self.deploy_count):
-            self.log(
-                f"{Fore.GREEN+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT}{i+1}{Style.RESET_ALL}"
-                f"{Fore.MAGENTA+Style.BRIGHT} Of {Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT}{self.deploy_count}{Style.RESET_ALL}                                   "
-            )
+            logger.info(f"{i+1} of {self.deploy_count}")
 
             token_name, token_symbol, raw_supply, total_supply = self.generate_raw_token()
 
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Name     :{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {token_name} {Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Symbol   :{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {token_symbol} {Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Decimals :{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} 18 {Style.RESET_ALL}"
-            )
-            self.log(
-                f"{Fore.CYAN+Style.BRIGHT}   Supply   :{Style.RESET_ALL}"
-                f"{Fore.WHITE+Style.BRIGHT} {raw_supply} {Style.RESET_ALL}"
-            )
+            logger.info(f"Name: {token_name}")
+            logger.info(f"Symbol: {token_symbol}")
+            logger.info(f"Decimals: 18")
+            logger.info(f"Supply: {raw_supply}")
             
             await self.process_perform_deploy_contract(account, address, token_name, token_symbol, total_supply, use_proxy)
             await self.print_timer()
@@ -921,10 +821,7 @@ class Helios:
         if logined:
             web3 = await self.get_web3_with_check(address, use_proxy)
             if not web3:
-                self.log(
-                    f"{Fore.CYAN+Style.BRIGHT}Status    :{Style.RESET_ALL}"
-                    f"{Fore.RED+Style.BRIGHT} Web3 Not Connected {Style.RESET_ALL}"
-                )
+                logger.error(f"Web3 Not Connected")
                 return
             
             self.used_nonce[address] = web3.eth.get_transaction_count(address, "pending")
@@ -964,12 +861,9 @@ class Helios:
                 use_proxy = True
 
             while True:
-                self.clear_terminal()
-                self.welcome()
-                self.log(
-                    f"{Fore.GREEN + Style.BRIGHT}Account's Total: {Style.RESET_ALL}"
-                    f"{Fore.WHITE + Style.BRIGHT}{len(accounts)}{Style.RESET_ALL}"
-                )
+                clear_console()
+                await self.display_welcome_screen()
+                logger.info(f"Account's Total: {len(accounts)}")
 
                 if use_proxy:
                     await self.load_proxies(use_proxy_choice)
@@ -979,17 +873,10 @@ class Helios:
                     if account:
                         address = self.generate_address(account)
 
-                        self.log(
-                            f"{Fore.CYAN + Style.BRIGHT}{separator}[{Style.RESET_ALL}"
-                            f"{Fore.WHITE + Style.BRIGHT} {self.mask_account(address)} {Style.RESET_ALL}"
-                            f"{Fore.CYAN + Style.BRIGHT}]{separator}{Style.RESET_ALL}"
-                        )
+                        logger.step(f"{separator}[ {self.mask_account(address)} ]{separator}")
 
                         if not address:
-                            self.log(
-                                f"{Fore.CYAN + Style.BRIGHT}Status    :{Style.RESET_ALL}"
-                                f"{Fore.RED + Style.BRIGHT} Invalid Private Key or Library Version Not Supported {Style.RESET_ALL}"
-                            )
+                            logger.error(f"Invalid Private Key or Library Version Not Supported")
                             continue
 
                         user_agent = FakeUserAgent().random
@@ -1014,7 +901,7 @@ class Helios:
                         await self.process_accounts(account, address, option, use_proxy_choice, rotate_proxy)
                         await asyncio.sleep(3)
 
-                self.log(f"{Fore.CYAN + Style.BRIGHT}={Style.RESET_ALL}"*72)
+                print(f"{Fore.CYAN + Style.BRIGHT}={Style.RESET_ALL}"*72)
                 seconds = 24 * 60 * 60
                 while seconds > 0:
                     formatted_time = self.format_seconds(seconds)
@@ -1030,10 +917,10 @@ class Helios:
                     seconds -= 1
 
         except FileNotFoundError:
-            self.log(f"{Fore.RED}File 'accounts.txt' Not Found.{Style.RESET_ALL}")
+            logger.error(f"File 'accounts.txt' Not Found.")
             return
         except Exception as e:
-            self.log(f"{Fore.RED+Style.BRIGHT}Error: {e}{Style.RESET_ALL}")
+            logger.error(f"Error: {e}")
             raise e
 
 if __name__ == "__main__":
@@ -1042,7 +929,7 @@ if __name__ == "__main__":
         asyncio.run(bot.main())
     except KeyboardInterrupt:
         print(
-            f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().strftime('%x %X')} ]{Style.RESET_ALL}"
+            f"{Fore.CYAN + Style.BRIGHT}[ {datetime.now().strftime('%H:%M:%S')} ]{Style.RESET_ALL}"
             f"{Fore.WHITE + Style.BRIGHT} | {Style.RESET_ALL}"
             f"{Fore.RED + Style.BRIGHT}[ EXIT ] Helios - BOT{Style.RESET_ALL}                                       "                              
         )
