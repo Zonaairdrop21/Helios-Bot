@@ -1,6 +1,7 @@
 from web3 import Web3
 from web3.exceptions import TransactionNotFound
-from solcx import compile_source, install_solc, set_solc_version
+from solcx import compile_source, install_solc, set_solc_version, compile_solc
+from solcx.exceptions import SolcInstallationError
 from eth_utils import to_hex
 from eth_account import Account
 from eth_account.messages import encode_defunct
@@ -13,8 +14,13 @@ import asyncio, random, json, re, os, pytz
 
 wib = pytz.timezone('Asia/Jakarta')
 
-install_solc('0.8.20')
-set_solc_version('0.8.20')
+# Modifikasi untuk mengatasi masalah instalasi solc
+try:
+    set_solc_version('0.8.20')
+except SolcInstallationError:
+    print("Failed to set solc version. Attempting to compile from source.")
+    compile_solc('0.8.20')
+    set_solc_version('0.8.20')
 
 class Helios:
     def __init__(self) -> None:
@@ -584,7 +590,7 @@ class Helios:
 
                     if self.CAPTCHA_KEY is None:
                         self.log(
-                            f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                            f"{Fore.MAGENTA+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
                             f"{Fore.BLUE+Style.BRIGHT}Status  :{Style.RESET_ALL}"
                             f"{Fore.RED+Style.BRIGHT}Turnstile Not Solved{Style.RESET_ALL}"
                             f"{Fore.MAGENTA+Style.BRIGHT} - {Style.RESET_ALL}"
@@ -599,7 +605,7 @@ class Helios:
 
                         if 'OK|' not in result:
                             self.log(
-                                f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                                f"{Fore.MAGENTA+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
                                 f"{Fore.BLUE+Style.BRIGHT}Message :{Style.RESET_ALL}"
                                 f"{Fore.YELLOW + Style.BRIGHT}{result}{Style.RESET_ALL}"
                             )
@@ -609,7 +615,7 @@ class Helios:
                         request_id = result.split('|')[1]
 
                         self.log(
-                            f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                            f"{Fore.MAGENTA+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
                             f"{Fore.BLUE+Style.BRIGHT}Req Id  :{Style.RESET_ALL}"
                             f"{Fore.WHITE + Style.BRIGHT} {request_id} {Style.RESET_ALL}"
                         )
@@ -625,7 +631,7 @@ class Helios:
                                     return turnstile_token
                                 elif res_result == "CAPCHA_NOT_READY":
                                     self.log(
-                                        f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                                        f"{Fore.MAGENTA+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
                                         f"{Fore.BLUE+Style.BRIGHT}Message :{Style.RESET_ALL}"
                                         f"{Fore.YELLOW + Style.BRIGHT} Captcha Not Ready {Style.RESET_ALL}"
                                     )
@@ -639,7 +645,7 @@ class Helios:
                     await asyncio.sleep(5)
                     continue
                 self.log(
-                    f"{Fore.MAGENTA+Style.BRIGHT} ● {Style.RESET_ALL}"
+                    f"{Fore.MAGENTA+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
                     f"{Fore.BLUE+Style.BRIGHT}Status  :{Style.RESET_ALL}"
                     f"{Fore.RED+Style.BRIGHT}Turnstile Not Solved{Style.RESET_ALL}"
                     f"{Fore.MAGENTA+Style.BRIGHT} - {Style.RESET_ALL}"
@@ -898,7 +904,7 @@ class Helios:
 
         for i in range(self.deploy_count):
             self.log(
-                f"{Fore.GREEN+Style.BRIGHT} ● {Style.RESET_ALL}"
+                f"{Fore.GREEN+Style.BRIGHT} ‚óè {Style.RESET_ALL}"
                 f"{Fore.WHITE+Style.BRIGHT}{i+1}{Style.RESET_ALL}"
                 f"{Fore.MAGENTA+Style.BRIGHT} Of {Style.RESET_ALL}"
                 f"{Fore.WHITE+Style.BRIGHT}{self.deploy_count}{Style.RESET_ALL}                                   "
